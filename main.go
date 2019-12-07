@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/anliksim/cmd-wrapper/hub"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -28,11 +29,14 @@ func main() {
 	}
 
 	clone := viper.GetBool("clone")
+	remove := viper.GetBool("remove")
 	verbose := viper.GetBool("verbose")
 	workDir := viper.GetString("workdir")
 
 	orgs := viper.GetStringSlice("orgs")
 	repoMap := viper.GetStringMapStringSlice("repos")
+
+	dirs := listAllDirectories(workDir)
 
 	hubCmd := hub.Hub(verbose)
 	log.Printf("Starting work in %s\n", workDir)
@@ -42,21 +46,57 @@ func main() {
 		repos := repoMap[org]
 
 		for e := range repos {
-			repo := repos[e]
-			dir := workDir + repo
-			_, err := os.Stat(dir)
+			repoDir := repos[e]
+			delete(dirs, repoDir)
+			dirPath := workDir + repoDir
+			_, err := os.Stat(dirPath)
 			if err != nil {
 				if clone {
-					cloneRepo(org, repo, workDir, hubCmd)
-					syncAndClean(dir, hubCmd)
+					cloneRepo(org, repoDir, workDir, hubCmd)
+					syncAndClean(dirPath, hubCmd)
 				} else {
-					log.Printf("Ignoring %s\n", dir)
+					log.Printf("Ignoring %s\n", dirPath)
 				}
 			} else {
-				syncAndClean(dir, hubCmd)
+				syncAndClean(dirPath, hubCmd)
 			}
 		}
 	}
+
+	if remove {
+		log.Printf("Cleaning up %s\n", workDir)
+		removedName := "removed"
+		removedPath := workDir + removedName
+		delete(dirs, removedName)
+		_, err := os.Stat(removedPath)
+		if err != nil {
+			err := os.Mkdir(removedPath, os.ModePerm)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		for dir, _ := range dirs {
+			log.Printf("Removing %s\n", dir)
+			err := os.Rename(workDir+dir, workDir+"removed/"+dir)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+}
+
+func listAllDirectories(workDir string) map[string]int {
+	files, err := ioutil.ReadDir(workDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dirs := map[string]int{}
+	for _, f := range files {
+		if f.IsDir() {
+			dirs[f.Name()] = 0
+		}
+	}
+	return dirs
 }
 
 func syncAndClean(dir string, hubCmd *hub.Cmd) {

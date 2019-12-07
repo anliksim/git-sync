@@ -2,6 +2,8 @@
 workdir: /home/anliksim/codebase/sync/
 # clone projects if they do not exist
 clone: false
+# remove projects if they are not listed (i.e. moves them into a folder 'removed')
+remove: true
 # if command output should be redirected to stdout
 verbose: false
 
