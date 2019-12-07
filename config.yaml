@@ -1,12 +1,19 @@
 # work directory where the listed repositories are located
 workdir: /home/anliksim/codebase/sync/
-git_user: anliksim
 # if command output should be redirected to stdout
 verbose: false
 
-# list of repositories to be processes
+# list of organisations to be processes
+orgs:
+  anliksim
+  yeahlow-ch
+
+# list of repositories to be processes if the org is listed
 repos:
-  - zhaw-pspp-lab10
-  - zhaw-pspp-lab9
-  - zhaw-pspp-lab8
-  - zhaw-pspp-lab4
+  anliksim:
+    - zhaw-pspp-lab10
+    - zhaw-pspp-lab9
+    - zhaw-pspp-lab8
+    - zhaw-pspp-lab4
+  yeahlow-ch:
+    - yeahlow-represaents

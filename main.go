@@ -10,6 +10,8 @@ import (
 
 func main() {
 
+	configFilePtr := flag.String("configFile", "config", "Name of the YAML file without the extension")
+	configPathPtr := flag.String("configPath", ".", "Directory where config.yml is located")
 	boolPtr := flag.Bool("d", false, "Run as daemon with schedule sync")
 	flag.Parse()
 	if *boolPtr {
@@ -17,8 +19,8 @@ func main() {
 		log.Fatal("Unsupported operation")
 	}
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
+	viper.SetConfigName(*configFilePtr)
+	viper.AddConfigPath(*configPathPtr)
 	viper.SetConfigType("yml")
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -27,25 +29,35 @@ func main() {
 
 	verbose := viper.GetBool("verbose")
 	workDir := viper.GetString("workdir")
-	gitUser := viper.GetString("git_user")
-	repos := viper.GetStringSlice("repos")
+
+	orgs := viper.GetStringSlice("orgs")
+	repoMap := viper.GetStringMapStringSlice("repos")
 
 	hubCmd := hub.Hub(verbose)
 	log.Printf("Starting work in %s\n", workDir)
-	for e := range repos {
-		repo := repos[e]
-		dir := workDir + repo
-		log.Printf("Processing %s\n", dir)
-		_, err := os.Stat(dir)
-		if err != nil {
-			cloneUrl := "git@github.com:" + gitUser + "/" + repo + ".git"
-			log.Printf("Cloning %s\n", cloneUrl)
-			hubCmd.WorkDir = workDir
-			hubCmd.Exec("clone", cloneUrl)
-		}
-		hubCmd.WorkDir = dir
-		hubCmd.Sync()
-		hubCmd.Exec("gc")
-	}
+	for e := range orgs {
+		org := orgs[e]
+		log.Printf("Processing organisation %s\n", org)
+		repos := repoMap[org]
 
+		for e := range repos {
+			repo := repos[e]
+			dir := workDir + repo
+			log.Printf("Processing %s\n", dir)
+			_, err := os.Stat(dir)
+			if err != nil {
+				cloneRepo(org, repo, workDir, hubCmd)
+			}
+			hubCmd.WorkDir = dir
+			hubCmd.Sync()
+			hubCmd.Exec("gc")
+		}
+	}
+}
+
+func cloneRepo(org string, repo string, workDir string, hubCmd *hub.Cmd) {
+	cloneUrl := "git@github.com:" + org + "/" + repo + ".git"
+	log.Printf("Cloning %s\n", cloneUrl)
+	hubCmd.WorkDir = workDir
+	hubCmd.Exec("clone", cloneUrl)
 }
