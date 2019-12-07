@@ -5,6 +5,7 @@ import (
 	"github.com/anliksim/cmd-wrapper/hub"
 	"github.com/spf13/viper"
 	"log"
+	"os"
 )
 
 func main() {
@@ -26,15 +27,25 @@ func main() {
 
 	verbose := viper.GetBool("verbose")
 	workDir := viper.GetString("workdir")
+	gitUser := viper.GetString("git_user")
 	repos := viper.GetStringSlice("repos")
 
 	hubCmd := hub.Hub(verbose)
 	log.Printf("Starting work in %s\n", workDir)
 	for e := range repos {
-		dir := workDir + repos[e]
-		hubCmd.WorkDir = dir
+		repo := repos[e]
+		dir := workDir + repo
 		log.Printf("Processing %s\n", dir)
+		_, err := os.Stat(dir)
+		if err != nil {
+			cloneUrl := "git@github.com:" + gitUser + "/" + repo + ".git"
+			log.Printf("Cloning %s\n", cloneUrl)
+			hubCmd.WorkDir = workDir
+			hubCmd.Exec("clone", cloneUrl)
+		}
+		hubCmd.WorkDir = dir
 		hubCmd.Sync()
 		hubCmd.Exec("gc")
 	}
+
 }
