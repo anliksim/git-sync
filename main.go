@@ -27,6 +27,7 @@ func main() {
 		log.Printf("Error reading config file, %s", err)
 	}
 
+	clone := viper.GetBool("clone")
 	verbose := viper.GetBool("verbose")
 	workDir := viper.GetString("workdir")
 
@@ -43,16 +44,26 @@ func main() {
 		for e := range repos {
 			repo := repos[e]
 			dir := workDir + repo
-			log.Printf("Processing %s\n", dir)
 			_, err := os.Stat(dir)
 			if err != nil {
-				cloneRepo(org, repo, workDir, hubCmd)
+				if clone {
+					cloneRepo(org, repo, workDir, hubCmd)
+					syncAndClean(dir, hubCmd)
+				} else {
+					log.Printf("Ignoring %s\n", dir)
+				}
+			} else {
+				syncAndClean(dir, hubCmd)
 			}
-			hubCmd.WorkDir = dir
-			hubCmd.Sync()
-			hubCmd.Exec("gc")
 		}
 	}
+}
+
+func syncAndClean(dir string, hubCmd *hub.Cmd) {
+	log.Printf("Processing %s\n", dir)
+	hubCmd.WorkDir = dir
+	hubCmd.Sync()
+	hubCmd.Exec("gc")
 }
 
 func cloneRepo(org string, repo string, workDir string, hubCmd *hub.Cmd) {

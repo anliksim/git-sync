@@ -1,5 +1,7 @@
 # work directory where the listed repositories are located
 workdir: /home/anliksim/codebase/sync/
+# clone projects if they do not exist
+clone: false
 # if command output should be redirected to stdout
 verbose: false
 
@@ -17,3 +19,4 @@ repos:
     - zhaw-pspp-lab4
   yeahlow-ch:
     - yeahlow-represaents
+    - yeahlow-abc
