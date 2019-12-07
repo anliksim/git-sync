@@ -1,0 +1,7 @@
+repos:
+  - zhaw-pspp-lab10
+  - zhaw-pspp-lab9
+  - zhaw-pspp-lab8
+
+workdir: /home/anliksim/codebase/sync/
+verbose: false
