@@ -1,4 +1,4 @@
-module git-sync
+module github.com/anliksim/git-sync
 
 go 1.13
 
