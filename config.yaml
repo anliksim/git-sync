@@ -1,16 +1,23 @@
 # work directory where the listed repositories are located
 workdir: /home/anliksim/codebase/sync/
+
+# the remote url prefix lets you change the protocol or use a different git server
+# - for SSL use: 'git@github.com:'
+# - for HTTPS use: 'https://github.com/'
+remote_url_prefix: 'git@github.com:'
+
 # clone projects if they do not exist
-clone: false
+clone: true
+
 # remove projects if they are not listed (i.e. moves them into a folder 'removed')
 remove: true
+
 # if command output should be redirected to stdout
 verbose: false
 
 # list of organisations to be processes
 orgs:
   anliksim
-  yeahlow-ch
 
 # list of repositories to be processes if the org is listed
 repos:
@@ -21,4 +28,3 @@ repos:
     - zhaw-pspp-lab4
   yeahlow-ch:
     - yeahlow-represaents
-    - yeahlow-abc
