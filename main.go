@@ -32,6 +32,7 @@ func main() {
 	remove := viper.GetBool("remove")
 	verbose := viper.GetBool("verbose")
 	workDir := viper.GetString("workdir")
+	remoteUrlPrefix := viper.GetString("remote_url_prefix")
 
 	orgs := viper.GetStringSlice("orgs")
 	repoMap := viper.GetStringMapStringSlice("repos")
@@ -52,7 +53,7 @@ func main() {
 			_, err := os.Stat(dirPath)
 			if err != nil {
 				if clone {
-					cloneRepo(org, repoDir, workDir, hubCmd)
+					cloneRepo(remoteUrlPrefix, org, repoDir, workDir, hubCmd)
 					syncAndClean(dirPath, hubCmd)
 				} else {
 					log.Printf("Ignoring %s\n", dirPath)
@@ -106,8 +107,8 @@ func syncAndClean(dir string, hubCmd *hub.Cmd) {
 	hubCmd.Exec("gc")
 }
 
-func cloneRepo(org string, repo string, workDir string, hubCmd *hub.Cmd) {
-	cloneUrl := "git@github.com:" + org + "/" + repo + ".git"
+func cloneRepo(remoteUrlPrefix string, org string, repo string, workDir string, hubCmd *hub.Cmd) {
+	cloneUrl := remoteUrlPrefix + org + "/" + repo + ".git"
 	log.Printf("Cloning %s\n", cloneUrl)
 	hubCmd.WorkDir = workDir
 	hubCmd.Exec("clone", cloneUrl)
