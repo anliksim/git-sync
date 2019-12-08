@@ -67,21 +67,36 @@ func main() {
 	if remove {
 		log.Printf("Cleaning up %s\n", workDir)
 		removedName := "removed"
-		removedPath := workDir + removedName
+		removedPath := workDir + removedName + "/"
 		delete(dirs, removedName)
-		_, err := os.Stat(removedPath)
-		if err != nil {
-			err := os.Mkdir(removedPath, os.ModePerm)
-			if err != nil {
-				log.Fatal(err)
+
+		if isNotEmpty(dirs) {
+			createIfNotExists(removedPath)
+			for dir, _ := range dirs {
+				moveToRemovedDir(dir, workDir, removedPath)
 			}
 		}
-		for dir, _ := range dirs {
-			log.Printf("Removing %s\n", dir)
-			err := os.Rename(workDir+dir, workDir+"removed/"+dir)
-			if err != nil {
-				log.Fatal(err)
-			}
+	}
+}
+
+func isNotEmpty(dirs map[string]int) bool {
+	return len(dirs) > 0
+}
+
+func moveToRemovedDir(dir string, oldPath string, newPath string) {
+	log.Printf("Removing %s\n", dir)
+	err := os.Rename(oldPath+dir, newPath+dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func createIfNotExists(dirPath string) {
+	_, err := os.Stat(dirPath)
+	if err != nil {
+		err := os.Mkdir(dirPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
