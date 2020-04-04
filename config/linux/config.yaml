@@ -7,18 +7,18 @@ workdir: /home/user/codesync
 remote_url_prefix: 'git@github.com:'
 
 # clone projects if they do not exist
-clone: true
+clone: false
 
 # remove projects if they are not listed (i.e. moves them into a folder 'removed')
-remove: true
+remove: false
 
 # if command output should be redirected to stdout
 verbose: false
 
 # list of organisations to be processes
 orgs:
-  myuser
-  myorg
+  - myuser
+  - myorg
 
 # list of repositories to be processes if the org is listed
 repos:
